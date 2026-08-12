@@ -1,0 +1,19 @@
+// FILE: storage.rules
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    function isAdmin() {
+      return request.auth != null && 
+             firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    match /{allPaths=**} {
+      // Bất kỳ ai cũng có thể đọc/nghe file âm thanh, hình ảnh
+      allow read: if true;
+      // Chỉ Admin mới được phép upload file
+      allow write: if isAdmin();
+    }
+  }
+}
